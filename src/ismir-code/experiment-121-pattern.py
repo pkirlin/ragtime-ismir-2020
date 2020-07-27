@@ -6,10 +6,12 @@ import data.PKDataset
 import data.RagDataset
 import scipy.stats
 import pandas as pd
+from pathlib import Path
 #from collections import Counter
 #import functions
 
-CREATE_GRAPHICS = True
+CREATE_FIGURES = True
+FIGURES_DIR = (Path(__file__).parent / "../../ismir-figures/").resolve()
 
 pkdata = data.PKDataset.PKDataset()
 rags = data.RagDataset.RagDataset()
@@ -176,7 +178,7 @@ print(test_early_late_untied, test_early_late_tied, test_old_modern_untied, test
 #####################
 # Create graphics
 
-if CREATE_GRAPHICS:
+if CREATE_FIGURES:
     import matplotlib.pyplot as plt
     import numpy as np
     import seaborn as sns
@@ -208,4 +210,4 @@ if CREATE_GRAPHICS:
     ax[0].set(ylabel='Frequency of pattern per measure')
     ax[0].legend((a.artists[0], a.artists[1]), ('Untied', 'Tied'))
     # ax[0].set_title('1890-1901', y=-.1)#(xlabel='Time signature and type of density',ylabel='Density')
-    fig.savefig('../ismir-figures/exp-121-freq-era.pdf', bbox_inches='tight')
+    fig.savefig(Path(FIGURES_DIR / 'exp-121-freq-era.pdf'), bbox_inches='tight')
