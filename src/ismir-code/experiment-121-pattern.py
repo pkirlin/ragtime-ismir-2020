@@ -1,10 +1,15 @@
+'''
+Run the "121" pattern experiments from the paper, section 4.1
+'''
 
 import data.PKDataset
 import data.RagDataset
 import scipy.stats
 import pandas as pd
-from collections import Counter
-import functions
+#from collections import Counter
+#import functions
+
+CREATE_GRAPHICS = True
 
 pkdata = data.PKDataset.PKDataset()
 rags = data.RagDataset.RagDataset()
@@ -136,7 +141,10 @@ print("Number of early+late rags: ", len(df_earlylate))
 print("Number of modern rags:     ", len(df_modern))
 # Sanity check from paper: 110 early, 582 late, 692 combined, 362 modern (makes 1058 total).
 
-print("Comparing tied vs untied:")
+#############
+
+# Compare tied/untied frequencies.  These are "per-measure" frequencies:
+print("Comparing tied vs untied frequencies:")
 print("Early rags: untied/tied:", df_early['untied_pct'].mean(), df_early['tied_pct'].mean())
 print("Late  rags: untied/tied:", df_late['untied_pct'].mean(), df_late['tied_pct'].mean())
 print("Early+late: untied/tied:", df_earlylate['untied_pct'].mean(), df_earlylate['tied_pct'].mean())
@@ -148,22 +156,56 @@ print("Modern rgs: untied/tied:", df_modern['untied_pct'].mean(), df_modern['tie
 # Modern rgs: untied/tied: 0.18353242780626713 0.29421524925766807
 
 ##################
-# Run tests
+# Run tests on 121 patterns comparing tied vs untied.
 
+# The two tests below illustrate the significant changes between use of tied patterns and untied
+# patterns between early & late ragtime periods.
 test_early_late_untied = scipy.stats.mannwhitneyu(df_early['untied_pct'], df_late['untied_pct'], alternative='two-sided')
 test_early_late_tied   = scipy.stats.mannwhitneyu(df_early['tied_pct'],   df_late['tied_pct'],   alternative='two-sided')
 
-test_old_modern_untied = scipy.stats.mannwhitneyu(df_earlylate['untied'], df_modern['untied_pct'], alternative='two-sided')
+# Same kind of test as immediately above, but comparing entire ragtime era to modern era.
+test_old_modern_untied = scipy.stats.mannwhitneyu(df_earlylate['untied_pct'], df_modern['untied_pct'], alternative='two-sided')
 test_old_modern_tied   = scipy.stats.mannwhitneyu(df_earlylate['tied_pct'],   df_modern['tied_pct'],   alternative='two-sided')
+print(test_early_late_untied, test_early_late_tied, test_old_modern_untied, test_old_modern_tied)
+# Sanity check from above:
+# MannwhitneyuResult(statistic=38358.5, pvalue=0.0009449051653914673)  p < .001
+# MannwhitneyuResult(statistic=17862.0, pvalue=1.514663431230446e-13)  p << .001
+# MannwhitneyuResult(statistic=105576.5, pvalue=2.690533885806077e-05) p < .001
+# MannwhitneyuResult(statistic=96494.0, pvalue=8.177095323582832e-10)  p << .001
 
-test_joplin_scott_untied = scipy.stats.mannwhitneyu(df_joplin['untied_pct'], df_scott['untied_pct'], alternative='two-sided')
-test_joplin_lamb_untied = scipy.stats.mannwhitneyu(df_joplin['untied_pct'], df_lamb['untied_pct'], alternative='two-sided')
-test_scott_lamb_untied = scipy.stats.mannwhitneyu(df_scott['untied_pct'], df_lamb['untied_pct'], alternative='two-sided')
+#####################
+# Create graphics
 
-test_joplin_scott_tied = scipy.stats.mannwhitneyu(df_joplin['tied_pct'], df_scott['tied_pct'], alternative='two-sided')
-test_joplin_lamb_tied = scipy.stats.mannwhitneyu(df_joplin['tied_pct'], df_lamb['tied_pct'], alternative='two-sided')
-test_scott_lamb_tied = scipy.stats.mannwhitneyu(df_scott['tied_pct'], df_lamb['tied_pct'], alternative='two-sided')
+if CREATE_GRAPHICS:
+    import matplotlib.pyplot as plt
+    import numpy as np
+    import seaborn as sns
+    import numpy as np
 
-print("Joplin tied/untied:", df_joplin['tied_pct'].mean(), df_joplin['untied_pct'].mean())
-print("Scott  tied/untied:", df_scott['tied_pct'].mean(), df_scott['untied_pct'].mean())
-print("Lamb   tied/untied:", df_lamb['tied_pct'].mean(), df_lamb['untied_pct'].mean())
+    fig, ax = plt.subplots(1, 4, sharey=True)
+
+    fig = plt.gcf()
+    plt.gcf().subplots_adjust(bottom=0.15)
+    fig.set_size_inches(5, 3)
+
+    a = sns.boxplot(data=[df_early['untied_pct'], df_early['tied_pct']], ax=ax[0], palette="Set3",
+                    notch=True)
+    b = sns.boxplot(data=[df_late['untied_pct'], df_late['tied_pct']], ax=ax[1], palette="Set3",
+                    notch=True)
+    c = sns.boxplot(data=[df_earlylate['untied_pct'], df_earlylate['tied_pct']], ax=ax[2],
+                    palette="Set3", notch=True)
+    d = sns.boxplot(data=[df_modern['untied_pct'], df_modern['tied_pct']], ax=ax[3], palette="Set3",
+                    notch=True)
+    # ax[0].set_yticks(np.arange(0, 1, .1))
+    ax[0].set_ylim(0, 1)
+    ax[1].set_ylim(0, 1)
+    ax[2].set_ylim(0, 1)
+    ax[3].set_ylim(0, 1)
+    ax[0].set(xticklabels=[], xlabel='1890-1901\n' + r'$\mu\approx$0.19, 0.12')
+    ax[1].set(xticklabels=[], xlabel='1902-1919\n' + r'$\mu\approx$0.14, 0.24')
+    ax[2].set(xticklabels=[], xlabel='1890-1919\n' + r'$\mu\approx$0.15, 0.22')
+    ax[3].set(xticklabels=[], xlabel='post-1919\n' + r'$\mu\approx$0.18, 0.29')
+    ax[0].set(ylabel='Frequency of pattern per measure')
+    ax[0].legend((a.artists[0], a.artists[1]), ('Untied', 'Tied'))
+    # ax[0].set_title('1890-1901', y=-.1)#(xlabel='Time signature and type of density',ylabel='Density')
+    fig.savefig('../ismir-figures/exp-121-freq-era.pdf', bbox_inches='tight')
