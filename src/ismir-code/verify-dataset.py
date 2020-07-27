@@ -26,6 +26,9 @@ print("We have", num_midis, "MIDI files in the RAG-C corpus.")
 
 bad = 0
 good = 0
+ts_22 = 0
+ts_24 = 0
+ts_44 = 0
 for title in pkdata.get_all_titles():
     series = pkdata.get_best_version_of_rag(title, accept_no_silence_at_start=True,
                                             quant_cutoff=0.95)
@@ -33,5 +36,12 @@ for title in pkdata.get_all_titles():
         bad += 1
     else:
         good += 1
+        fileid = series['fileid']
+        ts = pkdata.get_music21_time_signature_clean(fileid)
+        if ts == '2/2': ts_22 += 1
+        elif ts == '2/4': ts_24 += 1
+        elif ts == '4/4': ts_44 += 1
+        else: assert False  # this had better not happen...
 
 print("At 95% cutoff, accepting silence at the start, we have", good, "acceptable pieces.")
+print(f"\nTime signature counts: 2/4: {ts_24}, 4/4: {ts_44}, 2/2: {ts_22}")
