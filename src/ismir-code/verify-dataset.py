@@ -45,3 +45,7 @@ for title in pkdata.get_all_titles():
 
 print("At 95% cutoff, accepting silence at the start, we have", good, "acceptable pieces.")
 print(f"\nTime signature counts: 2/4: {ts_24}, 4/4: {ts_44}, 2/2: {ts_22}")
+# Sanity check from paper:
+# We have 11557 MIDI files in the RAG-C corpus.
+# At 95% cutoff, accepting silence at the start, we have 1058 acceptable pieces.
+# Time signature counts: 2/4: 810, 4/4: 214, 2/2: 34
