@@ -176,7 +176,7 @@ print(test_early_late_untied, test_early_late_tied, test_old_modern_untied, test
 # MannwhitneyuResult(statistic=96494.0, pvalue=8.177095323582832e-10)  p << .001
 
 #####################
-# Create graphics
+# Create graphics for comparing tied-vs-untied 121 patterns.
 
 if CREATE_FIGURES:
     import matplotlib.pyplot as plt
@@ -211,3 +211,57 @@ if CREATE_FIGURES:
     ax[0].legend((a.artists[0], a.artists[1]), ('Untied', 'Tied'))
     # ax[0].set_title('1890-1901', y=-.1)#(xlabel='Time signature and type of density',ylabel='Density')
     fig.savefig(Path(FIGURES_DIR / 'exp-121-freq-era.pdf'), bbox_inches='tight')
+
+
+#### Section 4.1, second half.  The big three.
+
+df_big3 = df[(df['composer']=='Joplin, Scott') | (df['composer']=='Scott, James') | (df['composer']=='Lamb, Joseph F.')]
+df_nonbig3 = df[(df['composer']!='Joplin, Scott') & (df['composer']!='Scott, James') & (df['composer']!='Lamb, Joseph F.')]
+
+df_big3_late = df_big3[df_big3['year_cat']=='1902-1919']
+df_nonbig3_late = df_nonbig3[df_nonbig3['year_cat']=='1902-1919']
+
+test_big3_others_untied = scipy.stats.mannwhitneyu(df_big3['untied_pct'], df_nonbig3['untied_pct'], alternative='two-sided')
+test_big3_others_tied = scipy.stats.mannwhitneyu(df_big3['tied_pct'], df_nonbig3['tied_pct'], alternative='two-sided')
+# of the two tests above, only one is statistically significant.
+
+test_big3_others_late_untied = scipy.stats.mannwhitneyu(df_big3_late['untied_pct'], df_nonbig3_late['untied_pct'], alternative='two-sided')
+test_big3_others_late_tied = scipy.stats.mannwhitneyu(df_big3_late['tied_pct'], df_nonbig3_late['tied_pct'], alternative='two-sided')
+# both these tests above should be statistically significant.
+
+print("Big 3-late u/t     :", df_big3_late['untied_pct'].mean(), df_big3_late['tied_pct'].mean())
+print("non big3 3-late u/t:", df_nonbig3_late['untied_pct'].mean(), df_nonbig3_late['tied_pct'].mean())
+print(test_big3_others_late_untied, test_big3_others_late_tied)
+# sanity check:
+# Big 3-late u/t     : 0.21639167251054703 0.3155269409251247
+# non big3 3-late u/t: 0.12839855408851242 0.22440251152728802
+# MannwhitneyuResult(statistic=25153.5, pvalue=4.020195674582184e-08) MannwhitneyuResult(statistic=23481.0, pvalue=2.4598968081215605e-05)
+
+if CREATE_FIGURES:
+    import matplotlib.pyplot as plt
+    import numpy as np
+    import seaborn as sns
+    import numpy as np
+
+    fig, ax = plt.subplots(1, 2, sharey=True)
+
+    fig = plt.gcf()
+    plt.gcf().subplots_adjust(bottom=0.15)
+    fig.set_size_inches(3, 3)
+
+    a = sns.boxplot(data=[df_big3_late['untied_pct'], df_big3_late['tied_pct']], ax=ax[0],
+                    palette="Set3", notch=True)
+    b = sns.boxplot(data=[df_nonbig3_late['untied_pct'], df_nonbig3_late['tied_pct']], ax=ax[1],
+                    palette="Set3", notch=True)
+
+    # ax[0].set_yticks(np.arange(0, 1, .1))
+    ax[0].set_ylim(0, 1)
+    ax[1].set_ylim(0, 1)
+
+    ax[0].set(xticklabels=[], xlabel='Big 3\n' + r'$\mu\approx$0.22, 0.32')
+    ax[1].set(xticklabels=[], xlabel='Non Big 3\n' + r'$\mu\approx$0.13, 0.22')
+
+    ax[0].set(ylabel='Frequency of pattern per measure')
+    ax[0].legend((a.artists[0], a.artists[1]), ('Untied', 'Tied'))
+    # ax[0].set_title('1890-1901', y=-.1)#(xlabel='Time signature and type of density',ylabel='Density')
+    fig.savefig(Path(FIGURES_DIR / 'exp-121-freq-big3-vs-others.pdf'), bbox_inches='tight')
