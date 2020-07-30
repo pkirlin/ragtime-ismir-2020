@@ -7,8 +7,6 @@ import data.RagDataset
 import scipy.stats
 import pandas as pd
 from pathlib import Path
-#from collections import Counter
-#import functions
 
 CREATE_FIGURES = True
 FIGURES_DIR = (Path(__file__).parent / "../../ismir-figures/").resolve()
